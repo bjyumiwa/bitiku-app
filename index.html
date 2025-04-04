@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>わたしの備蓄袋</title>
+  <style>
+    body {
+      background: #fff0f6;
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      color: #d63384;
+      text-align: center;
+    }
+    .item {
+      background: #ffe3ec;
+      padding: 10px;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+    img {
+      width: 60px;
+      border-radius: 6px;
+    }
+    button {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 わたしの備蓄袋 🌸</h1>
+
+  <input type="text" id="search" placeholder="🔍 名前やカテゴリで検索" style="width:100%; margin-bottom: 10px;" />
+
+  <div>
+    <label>📷 写真：<input type="file" id="photoInput" /></label><br />
+    <label>📝 名前：<input type="text" id="nameInput" /></label><br />
+    <label>📦 カテゴリ：<input type="text" id="categoryInput" /></label><br />
+    <label>📅 賞味期限：<input type="date" id="expiryInput" /></label><br />
+    <label>✏️ メモ：<textarea id="noteInput"></textarea></label><br />
+    <button onclick="addItem()">登録する</button>
+  </div>
+
+  <hr />
+
+  <div id="itemList"></div>
+
+  <script>
+    const items = [];
+    const searchInput = document.getElementById("search");
+    const itemList = document.getElementById("itemList");
+
+    function addItem() {
+      const photoInput = document.getElementById("photoInput");
+      const name = document.getElementById("nameInput").value;
+      const category = document.getElementById("categoryInput").value;
+      const expiry = document.getElementById("expiryInput").value;
+      const note = document.getElementById("noteInput").value;
+      const photoURL = photoInput.files[0] ? URL.createObjectURL(photoInput.files[0]) : null;
+
+      const item = { photoURL, name, category, expiry, note };
+      items.push(item);
+      renderItems();
+    }
+
+    function renderItems() {
+      itemList.innerHTML = "";
+      const keyword = searchInput.value.toLowerCase();
+      const today = new Date();
+
+      items.filter(item =>
+        item.name.toLowerCase().includes(keyword) || item.category.toLowerCase().includes(keyword)
+      ).forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        if (item.photoURL) {
+          const img = document.createElement("img");
+          img.src = item.photoURL;
+          div.appendChild(img);
+        }
+
+        div.innerHTML += `<p><strong>${item.name}</strong></p>`;
+        div.innerHTML += `<p>カテゴリ：${item.category}</p>`;
+        div.innerHTML += `<p>賞味期限：${item.expiry}</p>`;
+
+        const expiryDate = new Date(item.expiry);
+        const diff = (expiryDate - today) / (1000 * 60 * 60 * 24);
+        if (diff <= 3) {
+          div.innerHTML += `<p style="color:red;">⚠️ まもなく賞味期限！</p>`;
+        }
+
+        div.innerHTML += `<p>メモ：${item.note}</p>`;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑 削除";
+        delBtn.onclick = () => {
+          items.splice(index, 1);
+          renderItems();
+        };
+        div.appendChild(delBtn);
+
+        itemList.appendChild(div);
+      });
+    }
+
+    searchInput.addEventListener("input", renderItems);
+  </script>
+</body>
+</html>
